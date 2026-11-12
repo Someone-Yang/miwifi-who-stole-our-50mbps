@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>小米路由器 · 网络监控大屏</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23071120'/%3E%3Cpath d='M8 22h16M11 18.5c2.5-2 7.5-2 10 0M14.2 15.4c1.2-.9 2.4-1.3 3.6-1.3s2.4.4 3.6 1.3' stroke='%2322d3ee' stroke-width='1.8' stroke-linecap='round' fill='none'/%3E%3Ccircle cx='16' cy='25' r='1.4' fill='%2322d3ee'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body>
+  <div class="bg" aria-hidden="true">
+    <div class="bg-grid"></div>
+    <div class="bg-glow bg-glow-a"></div>
+    <div class="bg-glow bg-glow-b"></div>
+    <div class="bg-scan"></div>
+  </div>
+
+  <div class="app">
+    <!-- ==================== 顶栏 ==================== -->
+    <header class="topbar panel-frame" role="banner">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3.5" y="13" width="17" height="7" rx="2"></rect>
+            <path d="M7 10.2c2.8-2.3 7.2-2.3 10 0"></path>
+            <path d="M8.8 7.4c1.9-1.4 4.5-1.4 6.4 0"></path>
+            <circle cx="7.2" cy="16.5" r=".9" fill="currentColor" stroke="none"></circle>
+            <path d="M11 16.5h6"></path>
+          </svg>
+        </span>
+        <div class="brand-text">
+          <h1 class="brand-name">
+            <span id="routerName">小米路由器</span>
+            <span class="brand-model" id="routerModel">—</span>
+          </h1>
+          <p class="brand-sub">
+            <span id="routerPlatform">—</span>
+            <span class="sep">/</span>
+            <span id="routerFirmware">固件 —</span>
+            <span class="sep">/</span>
+            <span class="badge badge-ok" id="badgeOnline" hidden><i class="dot"></i>在线</span>
+            <span class="badge badge-demo" id="badgeDemo" hidden>演示数据</span>
+            <span class="badge badge-warn" id="badgeStale" hidden>数据已过期</span>
+            <span class="badge badge-muted" id="badgeConn">连接中…</span>
+          </p>
+        </div>
+      </div>
+
+      <dl class="top-meta">
+        <div class="meta-item">
+          <dt><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M3 9.5a14 14 0 0 1 18 0"></path><path d="M6.2 13a9.5 9.5 0 0 1 11.6 0"></path><path d="M9.4 16.4a5 5 0 0 1 5.2 0"></path><circle cx="12" cy="19.3" r="1" fill="currentColor" stroke="none"></circle></svg>Wi-Fi</dt>
+          <dd><span class="meta-value" id="ssid">—</span></dd>
+        </div>
+        <div class="meta-item">
+          <dt><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h5l2.4-5 2.6 10 2.2-5H20"></path></svg>WAN</dt>
+          <dd><span class="meta-value mono" id="wanIp">—</span><span class="tag" id="wanProto">—</span></dd>
+        </div>
+        <div class="meta-item">
+          <dt><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 7v5.2l3.2 1.9"></path></svg>运行</dt>
+          <dd><span class="meta-value mono" id="uptime">—</span></dd>
+        </div>
+      </dl>
+
+      <div class="top-right">
+        <div class="clock">
+          <span class="clock-time mono" id="clockTime">--:--:--</span>
+          <span class="clock-date" id="clockDate">----</span>
+        </div>
+        <button class="refresh-btn" id="refreshBtn" type="button" title="立即请求一次采样">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20 11a8 8 0 1 0-2.3 6.4"></path>
+            <path d="M20 5v6h-6"></path>
+          </svg>
+          <span>刷新</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ==================== KPI ==================== -->
+    <section class="kpis" aria-label="关键指标">
+      <article class="kpi panel-frame" style="--kpi-accent:#22d3ee">
+        <header class="kpi-head">
+          <span class="kpi-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4.5" width="18" height="11" rx="1.8"></rect>
+              <path d="M8 19.5h8M12 15.5v4"></path>
+            </svg>
+          </span>
+          <span>在线设备</span>
+        </header>
+        <div class="kpi-value">
+          <span class="kpi-num mono" id="kpiDevices">—</span>
+          <span class="kpi-unit">台</span>
+        </div>
+        <p class="kpi-foot" id="kpiDevFoot">共 — 台 · 5G — / 2.4G —</p>
+      </article>
+
+      <article class="kpi panel-frame" style="--kpi-accent:#22d3ee">
+        <header class="kpi-head">
+          <span class="kpi-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 4.5v15"></path><path d="M6 13.5 12 19.5 18 13.5"></path>
+            </svg>
+          </span>
+          <span>WAN 下行</span>
+        </header>
+        <div class="kpi-value">
+          <span class="kpi-num mono" id="kpiDownNum">—</span>
+          <span class="kpi-unit" id="kpiDownUnit"></span>
+        </div>
+        <p class="kpi-foot" id="kpiDownFoot">峰值 —</p>
+      </article>
+
+      <article class="kpi panel-frame" style="--kpi-accent:#a78bfa">
+        <header class="kpi-head">
+          <span class="kpi-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 19.5v-15"></path><path d="M6 10.5 12 4.5 18 10.5"></path>
+            </svg>
+          </span>
+          <span>WAN 上行</span>
+        </header>
+        <div class="kpi-value">
+          <span class="kpi-num mono" id="kpiUpNum">—</span>
+          <span class="kpi-unit" id="kpiUpUnit"></span>
+        </div>
+        <p class="kpi-foot" id="kpiUpFoot">峰值 —</p>
+      </article>
+
+      <article class="kpi panel-frame" style="--kpi-accent:#3b82f6">
+        <header class="kpi-head">
+          <span class="kpi-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <ellipse cx="12" cy="5.8" rx="7.5" ry="2.8"></ellipse>
+              <path d="M4.5 5.8v5c0 1.6 3.4 2.8 7.5 2.8s7.5-1.2 7.5-2.8v-5"></path>
+              <path d="M4.5 10.8v5c0 1.6 3.4 2.8 7.5 2.8s7.5-1.2 7.5-2.8v-5"></path>
+            </svg>
+          </span>
+          <span>累计流量</span>
+        </header>
+        <div class="kpi-value">
+          <span class="kpi-num mono" id="kpiTotalNum">—</span>
+          <span class="kpi-unit" id="kpiTotalUnit"></span>
+        </div>
+        <p class="kpi-foot" id="kpiTotalFoot">WAN 口累计流量</p>
+      </article>
+
+      <article class="kpi panel-frame kpi-sys" style="--kpi-accent:#f59e0b">
+        <header class="kpi-head">
+          <span class="kpi-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="7" y="7" width="10" height="10" rx="2"></rect>
+              <path d="M10 3v3M14 3v3M10 18v3M14 18v3M3 10h3M3 14h3M18 10h3M18 14h3"></path>
+            </svg>
+          </span>
+          <span>CPU / 内存</span>
+        </header>
+        <div class="sys-meters">
+          <div class="meter">
+            <span class="meter-label">CPU</span>
+            <span class="meter-track"><i class="meter-fill" id="cpuBar" data-level="low"></i></span>
+            <span class="meter-val mono" id="cpuVal">—</span>
+          </div>
+          <div class="meter">
+            <span class="meter-label">内存</span>
+            <span class="meter-track"><i class="meter-fill" id="memBar" data-level="low"></i></span>
+            <span class="meter-val mono" id="memVal">—</span>
+          </div>
+        </div>
+        <p class="kpi-foot" id="sysFoot">CPU 负载 / 内存占用</p>
+      </article>
+    </section>
+
+    <!-- ==================== 主区域 ==================== -->
+    <main class="layout">
+      <div class="layout-left">
+        <!-- 设备表格 -->
+        <section class="panel panel-frame devices-panel" aria-labelledby="devicesTitle">
+          <div class="panel-head">
+            <div class="panel-title">
+              <span class="accent-bar" aria-hidden="true"></span>
+              <h2 id="devicesTitle">在线设备实时流量</h2>
+              <span class="pill" id="deviceCount">—</span>
+            </div>
+            <div class="panel-tools">
+              <span class="hint">点击行联动环图 · 占比按在线设备实时带宽</span>
+              <label class="sort-control">
+                <span class="sort-label">排序</span>
+                <span class="sort-wrap">
+                  <select id="deviceSort" class="sort-select" aria-label="设备排序方式">
+                    <option value="name">名称升序</option>
+                    <option value="up">上行流量递减</option>
+                    <option value="down">下行流量递减</option>
+                    <option value="total" selected>总带宽占用递减</option>
+                  </select>
+                </span>
+              </label>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="device-table">
+              <thead>
+                <tr>
+                  <th class="col-dev">设备</th>
+                  <th class="col-ip">IP 地址</th>
+                  <th class="col-num">实时下行</th>
+                  <th class="col-num">实时上行</th>
+                  <th class="col-total">累计流量</th>
+                  <th class="col-share" title="实时占用 = 设备实时速率 / 在线设备实时速率之和，与环形图图例同口径">实时占用</th>
+                </tr>
+              </thead>
+              <tbody id="deviceBody">
+                <tr class="empty-row"><td colspan="6">正在连接路由器…</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="panel-note">
+            <span class="note-tag">数据说明</span>
+            <span class="note-text" id="dataNotes">累计流量为路由器开机以来统计</span>
+          </div>
+        </section>
+
+        <!-- 上下行最大带宽占用率 -->
+        <div class="occ-row">
+          <section class="panel panel-frame donut-panel occ-panel" aria-labelledby="downTitle">
+            <div class="panel-head">
+              <div class="panel-title">
+                <span class="accent-bar" aria-hidden="true"></span>
+                <h2 id="downTitle">下行占用率</h2>
+              </div>
+              <div class="panel-tools">
+                <span class="pill pill-limit" id="downLimitPill">上限 —</span>
+              </div>
+            </div>
+            <div class="donut-body" id="downBody">
+              <div class="donut-stage">
+                <canvas id="downCanvas" role="img" aria-label="各设备下行带宽占用率环形图"></canvas>
+                <div class="donut-center" aria-hidden="true">
+                  <span class="donut-value mono" id="downUsed">—</span>
+                  <span class="donut-caption" id="downCaption">已用下行带宽</span>
+                  <span class="donut-sub mono" id="downRate">— / —</span>
+                </div>
+              </div>
+              <ol class="legend" id="downLegend">
+                <li class="legend-empty">等待数据…</li>
+              </ol>
+              <div class="donut-empty" id="downEmpty" hidden>
+                <span class="empty-ring" aria-hidden="true"></span>
+                <span class="empty-title">未配置最大下行带宽</span>
+                <span class="empty-hint">配置宽带下行上限后显示占用率</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel panel-frame donut-panel occ-panel" aria-labelledby="upTitle">
+            <div class="panel-head">
+              <div class="panel-title">
+                <span class="accent-bar" aria-hidden="true"></span>
+                <h2 id="upTitle">上行占用率</h2>
+              </div>
+              <div class="panel-tools">
+                <span class="pill pill-limit" id="upLimitPill">上限 —</span>
+              </div>
+            </div>
+            <div class="donut-body" id="upBody">
+              <div class="donut-stage">
+                <canvas id="upCanvas" role="img" aria-label="各设备上行带宽占用率环形图"></canvas>
+                <div class="donut-center" aria-hidden="true">
+                  <span class="donut-value mono" id="upUsed">—</span>
+                  <span class="donut-caption" id="upCaption">已用上行带宽</span>
+                  <span class="donut-sub mono" id="upRate">— / —</span>
+                </div>
+              </div>
+              <ol class="legend" id="upLegend">
+                <li class="legend-empty">等待数据…</li>
+              </ol>
+              <div class="donut-empty" id="upEmpty" hidden>
+                <span class="empty-ring" aria-hidden="true"></span>
+                <span class="empty-title">未配置最大上行带宽</span>
+                <span class="empty-hint">配置宽带上行上限后显示占用率</span>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <!-- 带宽占用率环形图（实时总带宽 / 累计流量） -->
+      <section class="panel panel-frame donut-panel total-panel" aria-labelledby="donutTitle">
+        <div class="panel-head">
+          <div class="panel-title">
+            <span class="accent-bar" aria-hidden="true"></span>
+            <h2 id="donutTitle">总带宽占比</h2>
+          </div>
+          <div class="seg" role="group" aria-label="环形图统计口径">
+            <button class="seg-btn is-active" type="button" data-metric="live" aria-pressed="true">实时带宽</button>
+            <button class="seg-btn" type="button" data-metric="total" aria-pressed="false">累计流量</button>
+          </div>
+        </div>
+        <div class="donut-body">
+          <div class="donut-stage">
+            <canvas id="donutCanvas" role="img" aria-label="各设备带宽占用率环形图"></canvas>
+            <div class="donut-center" aria-hidden="true">
+              <span class="donut-value mono" id="donutValue">—</span>
+              <span class="donut-caption" id="donutCaption">当前总速率</span>
+              <span class="donut-sub" id="donutSub">在线设备带宽占比</span>
+            </div>
+          </div>
+          <ol class="legend" id="donutLegend">
+            <li class="legend-empty">等待数据…</li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- 实时趋势 -->
+      <section class="panel panel-frame trend-panel" aria-labelledby="trendTitle">
+        <div class="panel-head">
+          <div class="panel-title">
+            <span class="accent-bar" aria-hidden="true"></span>
+            <h2 id="trendTitle">实时速率趋势</h2>
+            <span class="pill pill-muted" id="trendWindow">最近 60 点</span>
+          </div>
+          <div class="panel-tools trend-chips">
+            <span class="chip chip-down"><i></i>下行 <b id="trendDown">—</b></span>
+            <span class="chip chip-up"><i></i>上行 <b id="trendUp">—</b></span>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="trendCanvas" role="img" aria-label="WAN 下行与上行速率趋势折线图"></canvas>
+          <div class="chart-tooltip" id="trendTooltip" hidden></div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ==================== 页脚 ==================== -->
+    <footer class="footer panel-frame" role="contentinfo">
+      <div class="foot-left">
+        <span class="foot-dot dot-muted" id="footDot" aria-hidden="true"></span>
+        <span id="footSource">数据来源：/api/overview · 等待连接</span>
+      </div>
+      <div class="foot-mid">
+        <span id="footInterval">刷新周期 2 秒</span>
+        <span class="sep">·</span>
+        <span id="footUpdated">最后更新 —</span>
+        <span class="foot-age" id="footAge">—</span>
+      </div>
+      <div class="foot-right">
+        <span class="foot-status" id="footStatus">正在连接后端…</span>
+      </div>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="/static/js/charts.js"></script>
+  <script src="/static/js/dashboard.js"></script>
+</body>
+</html>
